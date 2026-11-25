@@ -1,0 +1,1 @@
+{"name":"magnolia","version":"1.0.0","description":"Jogo Magnólia","main":"index.html","scripts":{"start":"vite"},"dependencies":{"phaser":"^4.2.1"},"devDependencies":{"vite":"^8.3.8"}}
