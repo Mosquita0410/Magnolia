@@ -22,6 +22,10 @@ class MainScene extends Phaser.Scene {
         // Criando a personagem provisória
         this.player = this.add.container(480, 270);
 
+        // Configurando a câmera para acompanhar a personagem
+        this.cameras.main.startFollow(this.player);
+        this.cameras.main.setBounds(0, 0, 1920, 1080);
+
         // Pernas
         this.player.add([
             this.add.rectangle(-6, 12, 7, 12, 0x302820),
