@@ -62,18 +62,20 @@ export default class WorldScene extends Phaser.Scene {
         );
     }
 
-    update() {
-        // A personagem só se move se não houver diálogo aberto
-        this.player.canMove = !this.dialog.active;
-        this.player.update();
+    update(time, delta) {
+    // O sistema de diálogo precisa do tempo pra digitar as letras
+    this.dialog.update(delta);
 
-        if (this.player.justPressedInteract()) {
-            if (this.dialog.active) {
-                this.dialog.advance();
-            } else {
-                const target = this.getNearbyInteractable();
-                if (target) this.dialog.open(target.lines);
-            }
+    this.player.canMove = !this.dialog.active;
+    this.player.update();
+
+    if (this.player.justPressedInteract()) {
+        if (this.dialog.active) {
+            this.dialog.interact(); // completa a fala OU avança
+        } else {
+            const target = this.getNearbyInteractable();
+            if (target) this.dialog.open(target.lines);
         }
     }
+}
 }
