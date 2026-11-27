@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
-import { WEAPONS } from '../data/weapons.js';
+import Inventory from '../systems/Inventory.js';
+import { updateHud } from '../systems/events.js';
 
 export default class Player extends Phaser.GameObjects.Container {
     constructor(scene, x, y) {
