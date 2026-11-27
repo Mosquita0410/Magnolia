@@ -3,7 +3,6 @@ import { gameEvents } from '../systems/events.js';
 import './DialogBox.css';
 
 export default function DialogBox() {
-    // null = caixa fechada | objeto = caixa aberta com aquela fala
     const [line, setLine] = useState(null);
 
     useEffect(() => {
@@ -13,7 +12,6 @@ export default function DialogBox() {
         gameEvents.on('dialog:update', onUpdate);
         gameEvents.on('dialog:close', onClose);
 
-        // Limpeza: para de escutar quando o componente sair
         return () => {
             gameEvents.off('dialog:update', onUpdate);
             gameEvents.off('dialog:close', onClose);
@@ -22,10 +20,23 @@ export default function DialogBox() {
 
     if (!line) return null;
 
+    // Parte já digitada e parte que ainda vai aparecer
+    const typed = line.visibleText;
+    const remaining = line.fullText.slice(typed.length);
+
     return (
         <div className="dialog-box">
-            <p className="dialog-text">{line.text}</p>
-            <span className="dialog-hint">{line.isLast ? '[E] fechar' : '[E] ▼'}</span>
+            <p className="dialog-text">
+                {typed}
+                {/* Texto invisível que "reserva" o espaço: a caixa não fica
+                    crescendo enquanto digita */}
+                <span className="dialog-ghost">{remaining}</span>
+            </p>
+
+            {/* A dica só aparece quando a fala terminou de digitar */}
+            <span className="dialog-hint">
+                {line.isTyping ? '\u00A0' : line.isLast ? '[E] fechar' : '[E] ▼'}
+            </span>
         </div>
     );
 }
