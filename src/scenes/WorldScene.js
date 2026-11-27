@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import Player from '../entities/Player.js';
 import Zombie from '../entities/Zombie.js';
 import Interactable from '../entities/Interactable.js';
+import WorldItem from '../entities/WorldItem.js';
 import DialogSystem from '../systems/DialogSystem.js';
 
 const WORLD_WIDTH = 1920;
@@ -19,6 +20,7 @@ export default class WorldScene extends Phaser.Scene {
         this.dialog = new DialogSystem();
         this.obstacles = this.physics.add.staticGroup();
         this.interactables = [];
+        this.worldItems = [];
         this.zombies = [];
         this.gameOver = false;
 
@@ -43,6 +45,12 @@ export default class WorldScene extends Phaser.Scene {
             lines: ['Eu continuo igual. Só mais cansada.']
         });
 
+        // Armas espalhadas pelo mapa (a garrafa perto, o facão longe)
+        this.addWorldItem(560, 330, 'garrafa');
+        this.addWorldItem(900, 520, 'faca');
+        this.addWorldItem(1600, 300, 'facao');
+        this.addWorldItem(1250, 900, 'garrafa');
+
         this.player = new Player(this, 480, 270);
         this.physics.add.collider(this.player, this.obstacles);
 
@@ -53,13 +61,7 @@ export default class WorldScene extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
         this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
 
-        this.createHud();
-
-        // PROVISÓRIO, só pra testar: troca de arma com 1, 2, 3 e 4
-        this.input.keyboard.on('keydown-ONE', () => this.player.equip('garrafa'));
-        this.input.keyboard.on('keydown-TWO', () => this.player.equip('faca'));
-        this.input.keyboard.on('keydown-THREE', () => this.player.equip('facao'));
-        this.input.keyboard.on('keydown-FOUR', () => this.player.equip('punho'));
+        this.createToast();
     }
 
     addObstacle(x, y, width, height, color) {
@@ -71,12 +73,14 @@ export default class WorldScene extends Phaser.Scene {
         this.interactables.push(new Interactable(this, x, y, width, height, data));
     }
 
+    addWorldItem(x, y, weaponKey) {
+        this.worldItems.push(new WorldItem(this, x, y, weaponKey));
+    }
+
     spawnZombie(x, y) {
         const zombie = new Zombie(this, x, y);
 
         this.physics.add.collider(zombie, this.obstacles);
-
-        // Zumbis esbarram uns nos outros (senão viram uma pilha só)
         this.zombies.forEach(other => this.physics.add.collider(zombie, other));
 
         this.zombies.push(zombie);
@@ -89,10 +93,41 @@ export default class WorldScene extends Phaser.Scene {
         );
     }
 
+    getNearbyItem() {
+        return this.worldItems.find(item =>
+            !item.picked && this.physics.overlap(this.player, item.zone)
+        );
+    }
+
+    // ---------- Interação (tecla E) ----------
+    // Prioridade: pegar item do chão, depois examinar objetos
+    handleInteract() {
+        const item = this.getNearbyItem();
+        if (item) {
+            this.pickUpItem(item);
+            return;
+        }
+
+        const target = this.getNearbyInteractable();
+        if (target) this.dialog.open(target.lines);
+    }
+
+    pickUpItem(item) {
+        const fitted = this.player.inventory.add(item.weaponKey);
+
+        if (!fitted) {
+            this.showToast('Mochila cheia.');
+            return; // o item continua no chão
+        }
+
+        item.pickUp();
+        this.showToast(`Pegou: ${item.name}`);
+    }
+
     // ---------- Combate ----------
     playerAttack() {
         const area = this.player.tryAttack();
-        if (!area) return; // ainda em cooldown
+        if (!area) return;
 
         this.showSwing(area);
 
@@ -108,14 +143,12 @@ export default class WorldScene extends Phaser.Scene {
             }
         }
 
-        // Só gasta a arma se acertou alguém
         if (hitSomething) {
-            const broken = this.player.consumeDurability();
+            const broken = this.player.inventory.useWeapon();
             if (broken) this.showToast(`${broken} quebrou!`);
         }
     }
 
-    // Clarão branco mostrando onde o golpe acertou (provisório)
     showSwing(area) {
         const swing = this.add.rectangle(area.centerX, area.centerY, area.width, area.height, 0xffffff, 0.4);
         this.time.delayedCall(100, () => swing.destroy());
@@ -143,15 +176,8 @@ export default class WorldScene extends Phaser.Scene {
         this.time.delayedCall(2500, () => this.scene.restart());
     }
 
-    // ---------- HUD provisório (depois vira React) ----------
-    createHud() {
-        this.hud = this.add.text(16, 12, '', {
-            fontSize: '18px',
-            color: '#e8c99b',
-            backgroundColor: '#000000aa',
-            padding: { x: 8, y: 4 }
-        }).setScrollFactor(0).setDepth(100);
-
+    // ---------- Aviso rápido (o resto do HUD agora é React) ----------
+    createToast() {
         this.toast = this.add.text(480, 60, '', {
             fontSize: '20px',
             color: '#ffffff',
@@ -160,16 +186,9 @@ export default class WorldScene extends Phaser.Scene {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(100).setVisible(false);
     }
 
-    updateHud() {
-        const p = this.player;
-        const durability = p.durability === Infinity ? '∞' : p.durability;
-        this.hud.setText(`VIDA ${p.health}/${p.maxHealth}   ARMA: ${p.weapon.name} (${durability})`);
-    }
-
     showToast(text) {
         this.toast.setText(text).setVisible(true);
 
-        // Se já tinha um aviso na tela, cancela o timer antigo
         if (this.toastTimer) this.toastTimer.remove();
         this.toastTimer = this.time.delayedCall(1800, () => this.toast.setVisible(false));
     }
@@ -182,21 +201,22 @@ export default class WorldScene extends Phaser.Scene {
         this.player.canMove = !frozen;
         this.player.update(delta);
 
-        // Lemos as duas teclas SEMPRE. Se não, um aperto durante o diálogo
-        // ficaria "guardado" e viraria um ataque fantasma quando ele fechasse.
+        // Lê todas as teclas SEMPRE, pra nenhuma ficar "guardada" durante o diálogo
         const wantsInteract = this.player.justPressedInteract();
         const wantsAttack = this.player.justPressedAttack();
+        const wantsSwitch = this.player.justPressedSwitch();
 
         if (!this.gameOver) {
             if (wantsInteract) {
                 if (this.dialog.active) {
                     this.dialog.interact();
                 } else {
-                    const target = this.getNearbyInteractable();
-                    if (target) this.dialog.open(target.lines);
+                    this.handleInteract();
                 }
             } else if (wantsAttack && !this.dialog.active) {
                 this.playerAttack();
+            } else if (wantsSwitch && !this.dialog.active) {
+                this.player.inventory.cycle();
             }
         }
 
@@ -207,7 +227,5 @@ export default class WorldScene extends Phaser.Scene {
         if (!frozen) this.checkZombieContact();
 
         if (this.player.isDead() && !this.gameOver) this.triggerGameOver();
-
-        this.updateHud();
     }
 }

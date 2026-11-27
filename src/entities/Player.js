@@ -51,24 +51,14 @@ export default class Player extends Phaser.GameObjects.Container {
         ]);
     }
 
-    // ---------- Arma ----------
-    equip(key) {
-        this.weaponKey = key;
-        this.weapon = WEAPONS[key];
-        this.durability = this.weapon.durability;
-    }
+   // A arma em mãos agora vem da mochila
+get weapon() {
+    return this.inventory.currentWeapon;
+}
 
-    // Gasta 1 de durabilidade. Se quebrar, devolve o nome da arma quebrada.
-    consumeDurability() {
-        this.durability--;
-
-        if (this.durability <= 0) {
-            const brokenName = this.weapon.name;
-            this.equip('punho');
-            return brokenName;
-        }
-        return null;
-    }
+justPressedSwitch() {
+    return Phaser.Input.Keyboard.JustDown(this.keys.switchWeapon);
+}
 
     // ---------- Ataque ----------
     justPressedInteract() {
@@ -115,6 +105,7 @@ export default class Player extends Phaser.GameObjects.Container {
         if (this.invulnTimer > 0 || this.isDead()) return false;
 
         this.health -= amount;
+        updateHud({ health: Math.max(0, this.health) });
         this.invulnTimer = 1000;
 
         if (this.isDead()) {
