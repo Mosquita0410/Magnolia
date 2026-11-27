@@ -45,6 +45,12 @@ export default class Player extends Phaser.GameObjects.Container {
     }
 
     update() {
+    // Durante o diálogo, a personagem fica parada
+    if (!this.canMove) {
+        this.body.setVelocity(0, 0);
+        return;
+    }
+    // ... o resto continua igual {
         let dx = 0;
         let dy = 0;
 
