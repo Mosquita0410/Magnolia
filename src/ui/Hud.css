@@ -1,46 +1,59 @@
 .hud {
     position: absolute;
-    top: 16px;
-    left: 16px;
-    font-family: 'Courier New', monospace;
+    top: 2cqw;
+    left: 2cqw;
+    font-family: 'Press Start 2P', monospace;
     color: #f2e6d0;
 }
 
 .hud-hearts {
-    font-size: 26px;
-    color: #c85a4a;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
+    display: flex;
+    gap: 0.6cqw;
+    margin-bottom: 1.2cqw;
+}
+
+.hud-heart {
+    width: 2.6cqw;
+    height: auto;
+    filter: drop-shadow(0.2cqw 0.2cqw 0 #1a1410); /* sombra dura */
 }
 
 .hud-slots {
     display: flex;
-    gap: 6px;
+    gap: 0.7cqw;
 }
 
 .hud-slot {
-    width: 70px;
-    height: 50px;
+    width: 8.5cqw;
+    height: 5.2cqw;
     box-sizing: border-box;
-    padding: 6px;
-    background: rgba(32, 26, 20, 0.85);
-    border: 2px solid #5a4a38;
+    padding: 0.6cqw;
+    background: #3a2e22;
+    border: 0.4cqw solid #1a1410;
+    box-shadow:
+        inset 0 0 0 0.25cqw #6b5640,   /* bisel claro por dentro */
+        0.25cqw 0.25cqw 0 #1a1410;     /* sombra dura por fora */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
 .hud-slot-selected {
+    background: #4a3b2a;
     border-color: #e8c99b;
+    box-shadow:
+        inset 0 0 0 0.25cqw #c8a15f,
+        0.25cqw 0.25cqw 0 #1a1410;
 }
 
 .hud-slot-name {
-    font-size: 13px;
+    font-size: 0.83cqw;
 }
 
 .hud-slot-bar {
-    height: 4px;
-    background: #2a221b;
+    height: 0.6cqw;
+    background: #1a1410;
+    border: 0.15cqw solid #1a1410;
 }
 
 .hud-slot-bar-fill {
@@ -49,7 +62,8 @@
 }
 
 .hud-holding {
-    margin-top: 8px;
-    font-size: 14px;
+    margin-top: 1.2cqw;
+    font-size: 0.83cqw;
     color: #c8a15f;
+    text-shadow: 0.15cqw 0.15cqw 0 #1a1410;
 }

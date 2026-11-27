@@ -1,16 +1,44 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
     <title>Magnólia</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <style>
+        html, body {
+            margin: 0;
+            height: 100%;
+            background: #141414;
+            overflow: hidden;
+        }
+
+        /* A moldura: sempre 16:9, centralizada, no maior tamanho que couber */
+        #frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(100vw, 177.78vh);
+            height: min(56.25vw, 100vh);
+            container-type: size; /* habilita as unidades cqw */
+        }
+
+        #game { position: absolute; inset: 0; }
+
+        #root {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-    <div id="game"></div>
-    <div id="root"></div>
+    <div id="frame">
+        <div id="game"></div>
+        <div id="root"></div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
-
