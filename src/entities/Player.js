@@ -16,7 +16,8 @@ export default class Player extends Phaser.GameObjects.Container {
         this.knockbackTimer = 0;  // tempo sendo empurrada
         this.attackCooldown = 0;
 
-        this.equip('faca');
+        this.inventory = new Inventory();
+        updateHud({ health: this.health, maxHealth: this.maxHealth });
 
         this.buildPlaceholder();
 
@@ -31,7 +32,9 @@ export default class Player extends Phaser.GameObjects.Container {
             left: Phaser.Input.Keyboard.KeyCodes.A,
             right: Phaser.Input.Keyboard.KeyCodes.D,
             interact: Phaser.Input.Keyboard.KeyCodes.E,
-            attack: Phaser.Input.Keyboard.KeyCodes.SPACE
+            attack: Phaser.Input.Keyboard.KeyCodes.SPACE,
+            switchWeapon: Phaser.Input.Keyboard.KeyCodes.Q
+            
         });
     }
 
