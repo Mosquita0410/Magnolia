@@ -6,6 +6,7 @@ export default class Player extends Phaser.GameObjects.Container {
 
         this.speed = 150;
         this.facing = 'down'; // vai servir pras animações depois
+        this.canMove = true;
 
         this.buildPlaceholder();
 
