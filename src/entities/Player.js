@@ -24,6 +24,11 @@ export default class Player extends Phaser.GameObjects.Container {
 });
     }
 
+        // Retorna true só no frame em que a tecla E foi apertada
+    justPressedInteract() {
+        return Phaser.Input.Keyboard.JustDown(this.keys.interact);
+}
+
     // Quando os sprites ficarem prontos, só esse método muda
     buildPlaceholder() {
         const s = this.scene;
